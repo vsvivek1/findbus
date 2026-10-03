@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import InstallApp from "@/components/InstallApp";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
   title: "Findbus · Where is my bus?",
   description:
     "See private and city buses live on a map. Bus owners share their buses' location for free, riders stop guessing at the bus stop.",
+  appleWebApp: { capable: true, title: "Findbus", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -44,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
         <main className="flex-1">{children}</main>
         <footer className="border-t border-stone-200 py-6 text-center text-sm text-stone-500">
+          <InstallApp className="mb-4" />
           Findbus · Live bus locations shared by bus owners
         </footer>
       </body>
