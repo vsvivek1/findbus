@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Findbus</string>
+    <string name="title_activity_main">Findbus</string>
+    <string name="package_name">app.findbus.android</string>
+    <string name="custom_url_scheme">app.findbus.android</string>
+    <string name="capacitor_background_geolocation_notification_channel_name">Trip location sharing</string>
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_stat_bus</string>
+    <string name="capacitor_background_geolocation_notification_color">#F59E0B</string>
+</resources>
