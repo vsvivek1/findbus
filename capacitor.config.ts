@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 // The Android app is a native shell around the live site, so web changes ship
 // without a Play Store update. The native part adds background GPS for drivers.
 const config: CapacitorConfig = {
-  appId: "app.findbus.android",
+  appId: "com.calecutech.findmybus",
   appName: "Findbus",
   webDir: "android-shell",
   server: {

@@ -1,6 +1,6 @@
 # Findbus on Google Play: exact steps
 
-App ID `app.findbus.android`. Links checked 4 Oct 2026.
+App ID `com.calecutech.findmybus`. Links checked 4 Oct 2026.
 
 ## 1. Merge the code
 1. Open <https://github.com/vsvivek1/findbus/pull/1>
