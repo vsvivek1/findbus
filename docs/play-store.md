@@ -39,13 +39,13 @@ Open <https://github.com/vsvivek1/findbus/settings/secrets/actions/new>, add eac
 <https://play.google.com/console> → **Create app** → Name `Findbus` → App → Free → tick declarations → **Create app**
 
 ## 6. Dashboard setup answers
-- Privacy policy: `https://findbus-azure.vercel.app/privacy`
+- Privacy policy: `https://calecutech.com/findmybus/privacy`
 - App access: **All functionality available without special access**
 - Ads: **No**
 - Content rating: fill questionnaire; "shares location" → **Yes**
 - Target audience: **18+**
 - Data safety: collects **Precise location**, **Name**, **Email**, **Phone** → purpose **App functionality** → not shared → encrypted in transit **Yes** → deletion request **Yes**
-- Account deletion URL: `https://findbus-azure.vercel.app/privacy`
+- Account deletion URL: `https://calecutech.com/findmybus/delete-account`
 - Foreground service → **Location** → text: `Drivers tap Start to share their bus's live location with riders. Runs with screen off while a notification shows; stops on Stop.` → video: record Start → lock phone → notification → Stop, upload to YouTube **Unlisted**, paste link.
 
 ## 7. Store listing
