@@ -1,0 +1,66 @@
+name: Publish to Google Play
+
+# Builds a signed bundle and uploads it with the store listing via fastlane.
+# Needs the 4 signing secrets plus PLAY_SERVICE_ACCOUNT_JSON (see docs/play-store.md).
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Play track"
+        type: choice
+        options: [production, beta, alpha, internal]
+        default: production
+      status:
+        description: "draft = review it in Play Console first; completed = send for review now"
+        type: choice
+        options: [draft, completed]
+        default: draft
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Install and sync Capacitor
+        run: |
+          npm ci
+          npx cap sync android
+
+      - name: Build signed bundle
+        working-directory: android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.FINDBUS_KEYSTORE_BASE64 }}
+          FINDBUS_KEYSTORE_PASSWORD: ${{ secrets.FINDBUS_KEYSTORE_PASSWORD }}
+          FINDBUS_KEY_ALIAS: ${{ secrets.FINDBUS_KEY_ALIAS }}
+          FINDBUS_KEY_PASSWORD: ${{ secrets.FINDBUS_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          # Minutes since 1970: always higher than the last upload.
+          export FINDBUS_VERSION_CODE=$(( $(date +%s) / 60 ))
+          echo "versionCode $FINDBUS_VERSION_CODE"
+          FINDBUS_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" ./gradlew --no-daemon bundleRelease
+          rm "$RUNNER_TEMP/upload.jks"
+
+      - name: Upload to Google Play
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          gem install fastlane --no-document
+          PLAY_JSON_KEY_PATH="$RUNNER_TEMP/play.json" fastlane android release track:${{ inputs.track }} status:${{ inputs.status }}
+          rm "$RUNNER_TEMP/play.json"

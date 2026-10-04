@@ -7,8 +7,9 @@ android {
         applicationId "com.calecutech.findmybus"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        // Bump both for every Play Store upload; versionCode must always increase.
-        versionCode 1
+        // Play needs a higher versionCode on every upload. The Play release
+        // workflow passes one in; local and test builds fall back to 1.
+        versionCode Integer.parseInt(System.getenv("FINDBUS_VERSION_CODE") ?: "1")
         versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

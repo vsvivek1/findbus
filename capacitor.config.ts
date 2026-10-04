@@ -4,7 +4,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 // without a Play Store update. The native part adds background GPS for drivers.
 const config: CapacitorConfig = {
   appId: "com.calecutech.findmybus",
-  appName: "Findbus",
+  appName: "Find My Bus",
   webDir: "android-shell",
   server: {
     url: "https://findbus-azure.vercel.app/find",

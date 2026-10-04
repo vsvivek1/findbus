@@ -1,0 +1,27 @@
+default_platform(:android)
+
+platform :android do
+  # Uploads the signed bundle plus the store listing in fastlane/metadata.
+  # Google only accepts "draft" until the app's first release is published.
+  desc "Upload app-release.aab and the store listing to Google Play"
+  lane :release do |options|
+    upload_to_play_store(
+      track: options[:track] || "production",
+      release_status: options[:status] || "draft",
+      aab: "android/app/build/outputs/bundle/release/app-release.aab",
+      metadata_path: "fastlane/metadata/android",
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Upload only the store listing text and images"
+  lane :listing do
+    upload_to_play_store(
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_changelogs: true,
+      skip_upload_screenshots: true,
+      metadata_path: "fastlane/metadata/android"
+    )
+  end
+end

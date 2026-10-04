@@ -1,0 +1,5 @@
+Find My Bus shows private and city buses live on a map. Riders search their stop or route and see where each bus is now.
+
+Bus owners register free, add buses and routes, and send each driver a link. The driver taps Start in the app and location sharing keeps working with the screen off until they tap Stop.
+
+No GPS device needed. No sign-up for riders.
