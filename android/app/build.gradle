@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "app.findbus.android"
+    namespace = "com.calecutech.findmybus"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.findbus.android"
+        applicationId "com.calecutech.findmybus"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Bump both for every Play Store upload; versionCode must always increase.

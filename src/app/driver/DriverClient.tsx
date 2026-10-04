@@ -157,7 +157,7 @@ export default function DriverClient({ driverKey: key }: { driverKey: string | n
           On Android?{" "}
           <a
             className="font-semibold text-amber-700 underline"
-            href={`intent://${APP_HOST}/driver?key=${key}#Intent;scheme=https;package=app.findbus.android;end`}
+            href={`intent://${APP_HOST}/driver?key=${key}#Intent;scheme=https;package=com.calecutech.findmybus;end`}
           >
             Open in the Findbus app
           </a>{" "}

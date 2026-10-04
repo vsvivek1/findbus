@@ -1,4 +1,4 @@
-package app.findbus.android;
+package com.calecutech.findmybus;
 
 import com.getcapacitor.BridgeActivity;
 
