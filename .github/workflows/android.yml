@@ -1,0 +1,62 @@
+name: Android app
+
+on:
+  push:
+    paths:
+      - "android/**"
+      - "android-shell/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      KEYSTORE_BASE64: ${{ secrets.FINDBUS_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install and sync Capacitor
+        run: |
+          npm ci
+          npx cap sync android
+
+      - name: Build test APK (install directly on a phone)
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: findbus-test-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Build signed Play Store bundle
+        if: env.KEYSTORE_BASE64 != ''
+        working-directory: android
+        env:
+          FINDBUS_KEYSTORE_PASSWORD: ${{ secrets.FINDBUS_KEYSTORE_PASSWORD }}
+          FINDBUS_KEY_ALIAS: ${{ secrets.FINDBUS_KEY_ALIAS }}
+          FINDBUS_KEY_PASSWORD: ${{ secrets.FINDBUS_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          FINDBUS_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" ./gradlew --no-daemon bundleRelease
+          rm "$RUNNER_TEMP/upload.jks"
+
+      - uses: actions/upload-artifact@v4
+        if: env.KEYSTORE_BASE64 != ''
+        with:
+          name: findbus-play-store-bundle
+          path: android/app/build/outputs/bundle/release/app-release.aab

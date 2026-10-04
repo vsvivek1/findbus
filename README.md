@@ -31,6 +31,12 @@ trip runs, and riders see buses live on a map.
    publishable (anon) key.
 3. `npm install && npm run dev`
 
+## Android app
+
+`android/` is a Capacitor app that wraps the live site and adds background
+GPS for drivers. GitHub Actions builds it (`.github/workflows/android.yml`).
+Publishing steps: [docs/play-store.md](docs/play-store.md).
+
 ## Reading the waitlist
 
 ```sql

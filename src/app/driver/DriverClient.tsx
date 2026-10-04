@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { isNativeApp, openAppSettings, startTracking, type Tracker } from "@/lib/native";
 import { rpc } from "@/lib/supabase";
 import { timeAgo } from "@/lib/types";
 
@@ -8,6 +9,10 @@ type DriverBus = { reg_no: string; name: string | null; route_name: string; stop
 
 // Send at most one update per interval, even if the phone reports more often.
 const SEND_EVERY_MS = 10_000;
+
+const APP_HOST = "findbus-azure.vercel.app";
+
+const noopSubscribe = () => () => {};
 
 export default function DriverClient({ driverKey: key }: { driverKey: string | null }) {
   const [bus, setBus] = useState<DriverBus | null>(null);
@@ -17,7 +22,9 @@ export default function DriverClient({ driverKey: key }: { driverKey: string | n
   const [sharing, setSharing] = useState(false);
   const [lastSent, setLastSent] = useState<string | null>(null);
   const [, tick] = useState(0);
-  const watchId = useRef<number | null>(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const tracker = useRef<Tracker | null>(null);
+  const native = useSyncExternalStore(noopSubscribe, isNativeApp, () => false);
   const lastSentAt = useRef(0);
   const wakeLock = useRef<{ release: () => Promise<void> } | null>(null);
 
@@ -37,7 +44,7 @@ export default function DriverClient({ driverKey: key }: { driverKey: string | n
   // Stop the GPS watch and screen lock when the driver leaves the page.
   useEffect(
     () => () => {
-      if (watchId.current != null) navigator.geolocation.clearWatch(watchId.current);
+      tracker.current?.stop();
       wakeLock.current?.release().catch(() => {});
     },
     [],
@@ -52,50 +59,55 @@ export default function DriverClient({ driverKey: key }: { driverKey: string | n
     }
   }
 
-  function start() {
+  async function start() {
     if (!key) return;
-    if (!("geolocation" in navigator)) {
-      setError("This phone's browser can't share location.");
-      return;
-    }
     setError(null);
+    setPermissionDenied(false);
     setSharing(true);
-    keepScreenOn();
+    // The app keeps tracking with the screen off; a browser needs it on.
+    if (!native) keepScreenOn();
     lastSentAt.current = 0;
-    watchId.current = navigator.geolocation.watchPosition(
-      async (pos) => {
-        const now = Date.now();
-        if (now - lastSentAt.current < SEND_EVERY_MS) return;
-        lastSentAt.current = now;
-        try {
-          await rpc("fb_update_location", {
-            p_driver_secret: key,
-            p_lat: pos.coords.latitude,
-            p_lng: pos.coords.longitude,
-            p_speed: pos.coords.speed != null ? pos.coords.speed * 3.6 : null,
-            p_heading: pos.coords.heading,
-          });
-          setLastSent(new Date().toISOString());
-          setError(null);
-        } catch (err) {
-          setError((err as Error).message);
-        }
-      },
-      (err) => {
-        setError(
-          err.code === err.PERMISSION_DENIED
-            ? "Location permission is off. Allow location for this site in your browser settings, then tap Start again."
-            : `Couldn't get location: ${err.message}`,
-        );
-        stop();
-      },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 },
-    );
+    try {
+      tracker.current = await startTracking(
+        async (fix) => {
+          const now = Date.now();
+          if (now - lastSentAt.current < SEND_EVERY_MS) return;
+          lastSentAt.current = now;
+          try {
+            await rpc("fb_update_location", {
+              p_driver_secret: key,
+              p_lat: fix.lat,
+              p_lng: fix.lng,
+              p_speed: fix.speedKmh,
+              p_heading: fix.heading,
+            });
+            setLastSent(new Date().toISOString());
+            setError(null);
+          } catch (err) {
+            setError((err as Error).message);
+          }
+        },
+        (message, denied) => {
+          setPermissionDenied(denied);
+          setError(
+            denied
+              ? native
+                ? "Location permission is off. Allow location for Findbus, then tap Start again."
+                : "Location permission is off. Allow location for this site in your browser settings, then tap Start again."
+              : `Couldn't get location: ${message}`,
+          );
+          stop();
+        },
+      );
+    } catch (err) {
+      setError((err as Error).message);
+      stop();
+    }
   }
 
   function stop() {
-    if (watchId.current != null) navigator.geolocation.clearWatch(watchId.current);
-    watchId.current = null;
+    tracker.current?.stop();
+    tracker.current = null;
     wakeLock.current?.release().catch(() => {});
     wakeLock.current = null;
     setSharing(false);
@@ -121,12 +133,37 @@ export default function DriverClient({ driverKey: key }: { driverKey: string | n
             {sharing ? "Stop" : "Start"}
           </button>
           <p className="mt-4 font-semibold">
-            {sharing ? "Sharing location. Keep this page open." : "Tap Start when the trip begins."}
+            {!sharing
+              ? "Tap Start when the trip begins."
+              : native
+                ? "Sharing location. You can lock the phone or use other apps."
+                : "Sharing location. Keep this page open and the screen on."}
           </p>
           {lastSent && <p className="text-sm text-stone-500">Last sent {timeAgo(lastSent)}</p>}
         </div>
       )}
-      {error && <p className="card mt-4 border-red-200 text-red-700">{error}</p>}
+      {error && (
+        <div className="card mt-4 border-red-200 text-red-700">
+          {error}
+          {permissionDenied && native && (
+            <button type="button" className="btn-secondary mt-3 w-full" onClick={openAppSettings}>
+              Open settings
+            </button>
+          )}
+        </div>
+      )}
+      {bus && !native && key && (
+        <p className="mt-4 text-center text-sm text-stone-600">
+          On Android?{" "}
+          <a
+            className="font-semibold text-amber-700 underline"
+            href={`intent://${APP_HOST}/driver?key=${key}#Intent;scheme=https;package=app.findbus.android;end`}
+          >
+            Open in the Findbus app
+          </a>{" "}
+          to keep sharing with the screen off.
+        </p>
+      )}
     </div>
   );
 }
