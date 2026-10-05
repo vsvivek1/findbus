@@ -50,9 +50,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="border-t border-stone-200 py-6 text-center text-sm text-stone-500">
           <InstallApp className="mb-4" />
           Findbus · Live bus locations shared by bus owners ·{" "}
-          <Link href="/privacy" className="underline">
+          <a href="https://calecutech.com/findmybus/privacy" className="underline">
             Privacy
-          </Link>
+          </a>
         </footer>
       </body>
     </html>

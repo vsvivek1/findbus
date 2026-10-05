@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Findbus</string>
-    <string name="title_activity_main">Findbus</string>
+    <string name="app_name">Find My Bus</string>
+    <string name="title_activity_main">Find My Bus</string>
     <string name="package_name">com.calecutech.findmybus</string>
     <string name="custom_url_scheme">com.calecutech.findmybus</string>
     <string name="capacitor_background_geolocation_notification_channel_name">Trip location sharing</string>
