@@ -29,6 +29,17 @@ export async function startTracking(
     } catch {
       // Tracking still works without the notification permission.
     }
+    // Ask for location before adding the watcher: Android 14+ refuses to start
+    // the location foreground service (and its notification) without it, and
+    // the plugin doesn't retry once the driver allows it.
+    const perms = BackgroundGeolocation as unknown as {
+      requestPermissions: () => Promise<{ location: string }>;
+    };
+    const { location } = await perms.requestPermissions();
+    if (location !== "granted") {
+      onError("Location permission is off.", true);
+      return { stop: () => {} };
+    }
     const id = await BackgroundGeolocation.addWatcher(
       {
         backgroundTitle: "Findbus is sharing this bus's location",

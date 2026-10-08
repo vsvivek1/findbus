@@ -1,5 +1,32 @@
-Find My Bus shows private and city buses live on a map. Riders search their stop or route and see where each bus is now.
+Stop guessing at the bus stop. Find My Bus shows private and city buses in Kozhikode live on the map, so you know exactly where your bus is and when to walk out of the house.
 
-Bus owners register free, add buses and routes, and send each driver a link. The driver taps Start in the app and location sharing keeps working with the screen off until they tap Stop.
+Made in Kozhikode for Malabar's bus travellers.
 
-No GPS device needed. No sign-up for riders.
+★ FOR PASSENGERS
+• See buses moving live on the map, updated every few seconds
+• Search by From and To stop, like Palayam to Medical College or Mananchira to Feroke
+• Search by bus name, registration number or route
+• Green dot = the bus is sharing its live location right now
+• See every stop on the route, from city buses to long routes like Kozhikode – Kannur and Kozhikode – Malappuram
+• No sign-up, no login, no fee. Open the app and find your bus
+
+Perfect for daily office trips, college students heading to Medical College or NIT Calicut, and anyone catching the bus from KSRTC stand, Palayam or Mofussil bus stand.
+
+★ FOR BUS OWNERS
+Passengers choose the bus they can see coming. Put your buses on the map for free:
+• Register as an owner and add your buses and routes in minutes
+• Send each driver a link. The driver opens it in Find My Bus and taps Start
+• Location keeps sharing with the screen off until the driver taps Stop
+• No GPS device to buy. Any Android phone works
+• Pause any bus anytime from your dashboard
+
+★ WHY FIND MY BUS
+• Less time waiting on the roadside in the sun and rain
+• No missed buses and no running for the last one
+• Simple, light and works on mobile data
+
+Find My Bus is starting in Kozhikode and growing across Kerala. Bus owners in Kozhikode, Malappuram, Kannur, Wayanad and beyond can join today and put their buses on the map.
+
+Calecute Technologies, Kozhikode
+Support: info@calecutech.com
+Website: calecutech.com/findmybus

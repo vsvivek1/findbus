@@ -1,0 +1,58 @@
+name: Play screenshots
+
+# Push to claude/play-screenshots: captures phone screenshots of the live site
+# and commits them. If the commit message contains [upload], also sends them to
+# the Play listing with fastlane. [listing] uploads the listing text instead.
+on:
+  push:
+    branches: [claude/play-screenshots]
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Capture
+        if: "!contains(github.event.head_commit.message, '[upload]') && !contains(github.event.head_commit.message, '[listing]') && !contains(github.event.head_commit.message, '[video]')"
+        run: |
+          npm i --no-save playwright@1
+          npx playwright install --with-deps chromium
+          node scripts/play-screenshots.mjs
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add fastlane/metadata/android/en-US/images/phoneScreenshots
+          git commit -m "Update Play phone screenshots" || echo "no changes"
+          git push
+
+      - uses: ruby/setup-ruby@v1
+        if: contains(github.event.head_commit.message, '[upload]') || contains(github.event.head_commit.message, '[listing]')
+        with:
+          ruby-version: "3.3"
+
+      - name: Upload to Google Play
+        if: contains(github.event.head_commit.message, '[upload]')
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          gem install fastlane --no-document
+          PLAY_JSON_KEY_PATH="$RUNNER_TEMP/play.json" fastlane android screenshots
+          rm "$RUNNER_TEMP/play.json"
+
+      - name: Upload store listing text to Google Play
+        if: contains(github.event.head_commit.message, '[listing]')
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          gem install fastlane --no-document
+          PLAY_JSON_KEY_PATH="$RUNNER_TEMP/play.json" fastlane android listing
+          rm "$RUNNER_TEMP/play.json"
