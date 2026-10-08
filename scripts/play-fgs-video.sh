@@ -47,15 +47,19 @@ sleep 2
 tap_text "While using the app" || tap_text "Only this time" || true
 for p in "75.7810 11.2600" "75.7822 11.2615" "75.7835 11.2630" "75.7850 11.2648"; do move $p; sleep 2; done
 # The foreground service notification.
-echo "== diag after start"
+{ echo "== diag after start"
 adb shell dumpsys package $PKG | grep -E "POST_NOTIFICATIONS|FOREGROUND_SERVICE|LOCATION: granted" | head
 adb shell dumpsys activity services $PKG | grep -iE "isForeground|foregroundId|BackgroundGeolocationService" | head
-adb shell dumpsys notification --noredact | grep -iE "pkg=com.calecutech|findbus" | head
-adb logcat -d | grep -iE "foreground|BackgroundGeolocation|Capacitor/Console|notification" | grep -iv "systemui" | tail -40
+adb shell dumpsys notification --noredact | grep -iE -A4 "pkg=com.calecutech" | head -30
+adb logcat -d | grep -iE "foreground|BackgroundGeolocation|Capacitor/Console|notification" | grep -iv "systemui" | grep -iE "calecutech|BackgroundGeolocation|ForegroundService|startForeground|Exception" | tail -40; } > "$(dirname "$OUT")/fgs-diag.txt" 2>&1
 adb shell cmd statusbar expand-notifications; sleep 5
 adb shell cmd statusbar collapse; sleep 1
 # Driver leaves the app; sharing keeps running.
 adb shell input keyevent 3; sleep 2
+{ echo "== diag after home"
+adb shell dumpsys activity services $PKG | grep -iE "isForeground|foregroundId|BackgroundGeolocationService" | head
+adb shell dumpsys notification --noredact | grep -iE -A4 "pkg=com.calecutech" | head -30
+adb logcat -d | grep -iE "calecutech|BackgroundGeolocation|ForegroundService|startForeground|AndroidRuntime" | tail -30; } >> "$(dirname "$OUT")/fgs-diag.txt" 2>&1
 for p in "75.7865 11.2665" "75.7880 11.2680"; do move $p; sleep 2; done
 adb shell cmd statusbar expand-notifications; sleep 5
 adb shell cmd statusbar collapse; sleep 1
