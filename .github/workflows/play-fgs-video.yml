@@ -56,8 +56,7 @@ jobs:
 
       - name: Commit video
         run: |
-          mkdir -p media/frames && mv foreground-service-demo.mp4 media/
-          ffmpeg -loglevel error -i media/foreground-service-demo.mp4 -vf "fps=1/4,scale=360:-1" media/frames/f%02d.jpg
+          mkdir -p media && mv foreground-service-demo.mp4 media/
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add media
