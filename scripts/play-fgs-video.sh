@@ -40,7 +40,7 @@ adb shell screenrecord --bit-rate 6000000 /sdcard/demo.mp4 &
 REC=$!
 sleep 2
 # Driver opens the link the owner sent them.
-adb shell am start -a android.intent.action.VIEW -d "$URL" $PKG
+adb shell am start -n $PKG/.MainActivity -a android.intent.action.VIEW -d "'$URL'"
 sleep 12
 tap_text "Start"
 sleep 2
@@ -64,7 +64,7 @@ for p in "75.7865 11.2665" "75.7880 11.2680"; do move $p; sleep 2; done
 adb shell cmd statusbar expand-notifications; sleep 5
 adb shell cmd statusbar collapse; sleep 1
 # Back to the app and Stop.
-adb shell am start -a android.intent.action.VIEW -d "$URL" $PKG
+adb shell am start -n $PKG/.MainActivity -a android.intent.action.VIEW -d "'$URL'"
 sleep 4
 tap_text "Stop"
 sleep 3

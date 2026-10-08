@@ -27,9 +27,23 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Build test APK
+      # The app shell loads this branch's site from the runner, so the video
+      # shows the code on this branch (the emulator reaches the host at 10.0.2.2).
+      - name: Build and serve this branch's site
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://vspbbwpehvenmxddgbhm.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzcGJid3BlaHZlbm14ZGRnYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNzY0MTAsImV4cCI6MjEwNTc1MjQxMH0.dH6rg_EMpXUl4zZ2o9Ngq-ImrcfKZmBxOugbntBkCBA
         run: |
           npm ci
+          npm run build
+          nohup setsid npx next start -p 3000 > "$RUNNER_TEMP/next.log" 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/find >/dev/null && break; sleep 1; done
+          curl -sf -o /dev/null -w "site %{http_code}\n" http://localhost:3000/find
+
+      - name: Build test APK
+        run: |
+          sed -i 's#url: "https://findbus-azure.vercel.app/find",#url: "http://10.0.2.2:3000/find", cleartext: true,#' capacitor.config.ts
+          grep -n "url:" capacitor.config.ts
           npx cap sync android
           cd android && ./gradlew --no-daemon assembleDebug
 
@@ -47,7 +61,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: false
-          script: bash scripts/play-fgs-video.sh android/app/build/outputs/apk/debug/app-debug.apk "https://findbus-azure.vercel.app/driver?key=ba97bbc1-a786-42e2-bff1-7cb969326862" "$PWD/foreground-service-demo.mp4"
+          script: bash scripts/play-fgs-video.sh android/app/build/outputs/apk/debug/app-debug.apk "http://10.0.2.2:3000/driver?key=ba97bbc1-a786-42e2-bff1-7cb969326862" "$PWD/foreground-service-demo.mp4"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -56,6 +70,7 @@ jobs:
 
       - name: Commit video
         run: |
+          git checkout -- capacitor.config.ts
           mkdir -p media && mv foreground-service-demo.mp4 fgs-diag.txt media/
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
