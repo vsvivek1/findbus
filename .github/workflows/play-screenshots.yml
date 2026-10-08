@@ -21,7 +21,7 @@ jobs:
           node-version: 22
 
       - name: Capture
-        if: "!contains(github.event.head_commit.message, '[upload]') && !contains(github.event.head_commit.message, '[listing]')"
+        if: "!contains(github.event.head_commit.message, '[upload]') && !contains(github.event.head_commit.message, '[listing]') && !contains(github.event.head_commit.message, '[video]')"
         run: |
           npm i --no-save playwright@1
           npx playwright install --with-deps chromium
