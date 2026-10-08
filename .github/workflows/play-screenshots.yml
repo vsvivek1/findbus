@@ -2,7 +2,7 @@ name: Play screenshots
 
 # Push to claude/play-screenshots: captures phone screenshots of the live site
 # and commits them. If the commit message contains [upload], also sends them to
-# the Play listing with fastlane.
+# the Play listing with fastlane. [listing] uploads the listing text instead.
 on:
   push:
     branches: [claude/play-screenshots]
@@ -21,7 +21,7 @@ jobs:
           node-version: 22
 
       - name: Capture
-        if: "!contains(github.event.head_commit.message, '[upload]')"
+        if: "!contains(github.event.head_commit.message, '[upload]') && !contains(github.event.head_commit.message, '[listing]')"
         run: |
           npm i --no-save playwright@1
           npx playwright install --with-deps chromium
@@ -33,7 +33,7 @@ jobs:
           git push
 
       - uses: ruby/setup-ruby@v1
-        if: contains(github.event.head_commit.message, '[upload]')
+        if: contains(github.event.head_commit.message, '[upload]') || contains(github.event.head_commit.message, '[listing]')
         with:
           ruby-version: "3.3"
 
@@ -45,4 +45,14 @@ jobs:
           printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
           gem install fastlane --no-document
           PLAY_JSON_KEY_PATH="$RUNNER_TEMP/play.json" fastlane android screenshots
+          rm "$RUNNER_TEMP/play.json"
+
+      - name: Upload store listing text to Google Play
+        if: contains(github.event.head_commit.message, '[listing]')
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          gem install fastlane --no-document
+          PLAY_JSON_KEY_PATH="$RUNNER_TEMP/play.json" fastlane android listing
           rm "$RUNNER_TEMP/play.json"
